@@ -1,0 +1,30 @@
+###Application
+
+###Common
+server:
+  port: 8080
+  
+spring.datasource.url: jdbc:h2:mem:test
+#spring.datasource.url: jdbc:mysql://localhost:3306/demodb
+#spring.datasource.username: demo
+#spring.datasource.password: demo123
+
+spring:
+  jpa:
+    show-sql: true
+    #database: MYSQL
+    database: H2
+    hibernate:
+      ddl-auto: create-drop
+
+spring.h2.console.enabled: true
+spring.datasource.hikari.connectionTimeout: 20000
+spring.datasource.hikari.maximumPoolSize: 5
+spring.datasource.hikari.poolName: HikariPoolZZZ
+      
+logging:
+  level:
+    org.springframework: INFO
+    com.zaxxer.hikari: DEBUG
+    org.octopus: INFO
+    root: ERROR    

@@ -1,0 +1,5 @@
+###Application
+
+###Common
+server:
+  port: 8080

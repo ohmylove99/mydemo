@@ -1,0 +1,14 @@
+= Application API
+
+== Overview
+API documentation
+
+=== Version information
+Version: 0.0.1
+
+=== Contact information
+
+=== URI scheme
+Host: localhost
+BasePath: /
+
