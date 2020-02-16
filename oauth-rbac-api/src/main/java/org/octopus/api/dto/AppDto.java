@@ -15,6 +15,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
+/**
+ * Why need DTO - it can help hidden domain details
+ * https://stackoverflow.com/questions/39397147/difference-between-entity-and-dto
+ * 
+ * @author joshualeng
+ *
+ */
 public class AppDto {
 	private String id;
 

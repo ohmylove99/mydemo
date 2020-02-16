@@ -2,32 +2,41 @@ package org.octopus.api.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.envers.Audited;
+import org.octopus.api.entity.audit.AbstractAuditEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@EqualsAndHashCode(callSuper = true)
 
 @Entity(name = "App")
 @Table(name = "oauth_rbac_app")
-public class AppEntity extends IdentityEntity{
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Audited
+public class AppEntity extends AbstractAuditEntity {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 611628435787516376L;
-
-	//@Id
-	//@GeneratedValue(strategy = GenerationType.AUTO, generator = "APP_SEQ")
-	//@SequenceGenerator(sequenceName = "app_seq", allocationSize = 1, name = "APP_SEQ")
-	//private Long id;
+	private static final long serialVersionUID = -7949851119286975489L;
+	@Id
+	@GenericGenerator(name = "system-uuid", strategy = "uuid2")
+	@GeneratedValue(generator = "system-uuid")
+	private String id;
 
 	@Column(length = 6)
 	private String appId;

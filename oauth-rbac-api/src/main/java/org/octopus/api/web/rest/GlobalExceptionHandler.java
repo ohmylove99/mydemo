@@ -1,6 +1,7 @@
 package org.octopus.api.web.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,16 +25,22 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-	/**
-	 * Let Spring BasicErrorController handle the exception, we just override the
-	 * status code
-	 * 
-	 * @param response
-	 * @throws IOException
-	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@ExceptionHandler(Exception.class)
+	public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(ex.getLocalizedMessage());
+		ErrorResponse error = new ErrorResponse("Server Error", details);
+		return new ResponseEntity(error, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@ExceptionHandler(EntityNotFoundException.class)
-	public void springHandleNotFound(HttpServletResponse response) throws IOException {
-		response.sendError(HttpStatus.NOT_FOUND.value());
+	public final ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
+		List<String> details = new ArrayList<>();
+		details.add(ex.getLocalizedMessage());
+		ErrorResponse error = new ErrorResponse("Record Not Found", details);
+		return new ResponseEntity(error, HttpStatus.NOT_FOUND);
 	}
 
 	/**

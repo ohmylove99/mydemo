@@ -20,11 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -81,7 +77,7 @@ public class AppController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<AppDto> findById(@PathVariable String id) {
 		// Get DB Result
-		Optional<AppEntity> findEntity = service.findById(id);
+		Optional<AppEntity> findEntity = service.find(id);
 		// Id should be fetch from URL and do reset
 		if (findEntity.isPresent()) {
 			AppEntity entity = findEntity.get();
@@ -93,31 +89,15 @@ public class AppController {
 	}
 
 	// Save
-	@PostMapping(produces = "application/json")
+	// @PostMapping()
+	@RequestMapping(method = RequestMethod.POST)
 	// return 201 instead of 200
-	public ResponseEntity<?> create(@Valid @RequestBody AppDto dto) {
+	public ResponseEntity<AppDto> create(@Valid @RequestBody AppDto dto) {
+		if (StringUtils.isNotEmpty(dto.getId())) {
+			log.warn("do't need set dto id with post, ingore the id :" + dto.getId());
+			dto.setId(StringUtils.EMPTY);
+		}
 		return createEntity(dto);
-	}
-
-	private ResponseEntity<?> createEntity(AppDto dto) {
-		// DO Insert/Update
-		AppEntity entity = service.createOrUpdate(toEntity(dto));
-		// Build URI
-		String id = entity.getId();
-		UriComponents uriComponents = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id);
-		// Convert to DTO
-		AppDto newDto = toDto(entity);
-		// Return ResponseEntity
-		return ResponseEntity.created(uriComponents.toUri()).body(newDto);
-	}
-
-	private ResponseEntity<AppDto> updateEntity(AppEntity entity) {
-		// DO Insert/Update
-		AppEntity newEntity = service.createOrUpdate(entity);
-		// Convert to DTO
-		AppDto newDto = toDto(newEntity);
-		// Return ResponseEntity
-		return ResponseEntity.accepted().body(newDto);
 	}
 
 	/**
@@ -127,8 +107,9 @@ public class AppController {
 	 * @param id
 	 * @return
 	 */
-	@PutMapping("/{id}")
-	public ResponseEntity<?> createOrUpdate(@RequestBody AppDto dto, @PathVariable String id) {
+	// @PutMapping("/{id}")
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = "application/json")
+	public ResponseEntity<AppDto> createOrUpdate(@RequestBody AppDto dto, @PathVariable String id) {
 		// Convert to Entity
 		if (StringUtils.isNotEmpty(dto.getId())) {
 			log.warn("do't need set dto id, please use post method instead, remove id :" + dto.getId()
@@ -136,15 +117,18 @@ public class AppController {
 			dto.setId(StringUtils.EMPTY);
 		}
 		// Find Entity from DB
-		Optional<AppEntity> findEntity = service.findById(id);
+		Optional<AppEntity> findEntity = service.find(id);
 		// Id should be fetch from URL and do reset
 		if (findEntity.isPresent()) {
 			// Do update
 			AppEntity newEntity = toEntity(dto);
+			newEntity.setId(id);
 			return updateEntity(newEntity);
 		} else {
-			// Do create
-			return createEntity(dto);
+			// Do create, else you can throw the not found exception.
+			// So even it's convenient, but not suggested
+			// return createEntity(dto);
+			throw new EntityNotFoundException(AppEntity.class.getSimpleName(), id.toString());
 		}
 	}
 
@@ -156,10 +140,11 @@ public class AppController {
 	 * @return
 	 */
 	// update name only, you can extends via reflection
-	@PatchMapping("/{id}")
-	public AppDto patch(@RequestBody Map<String, String> update, @PathVariable String id) {
+	// @PatchMapping("/{id}")
+	@RequestMapping(value = "/{id}", method = RequestMethod.PATCH, produces = "application/json")
+	public ResponseEntity<AppDto> patch(@RequestBody Map<String, String> update, @PathVariable String id) {
 
-		Optional<AppEntity> findEntity = service.findById(id);
+		Optional<AppEntity> findEntity = service.find(id);
 
 		if (findEntity.isPresent()) {
 			AppEntity finalEntity = findEntity.map(x -> {
@@ -167,7 +152,7 @@ public class AppController {
 				try {
 					AppEntity entity = oMapper.convertValue(update, AppEntity.class);
 					entity.setId(id);
-					AppEntity rtnEntity = service.createOrUpdate(entity);
+					AppEntity rtnEntity = service.save(entity);
 					return rtnEntity;
 				} catch (Exception e) {
 					throw new EntityUnSupportedFieldPatchException(update.keySet());
@@ -175,20 +160,20 @@ public class AppController {
 			}).orElseThrow(() -> {
 				throw new EntityUnSupportedFieldPatchException(update.keySet());
 			});
-			return toDto(finalEntity);
+			AppDto newDto = toDto(finalEntity);
+			return ResponseEntity.accepted().body(newDto);
 		} else {
 			throw new EntityNotFoundException(AppEntity.class.getSimpleName(), id.toString());
 		}
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> delete(@PathVariable String id) {
-		Optional<AppEntity> entity = service.findById(id);
+	// @DeleteMapping("/{id}")
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "application/json")
+	public ResponseEntity<AppDto> delete(@PathVariable String id) {
+		Optional<AppEntity> entity = service.find(id);
 
 		if (entity.isPresent()) {
 			service.remove(id);
-			// This is simple respose
-			// return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 			// Convert to DTO
 			AppDto newDto = toDto(entity.get());
 			// Return ResponseEntity
@@ -199,6 +184,28 @@ public class AppController {
 	}
 
 	// ========= Private Method
+
+	private ResponseEntity<AppDto> createEntity(AppDto dto) {
+		// DO Create
+		AppEntity entity = service.save(toEntity(dto));
+		// Build URI
+		String id = entity.getId();
+		UriComponents uriComponents = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id);
+		// Convert to DTO
+		AppDto newDto = toDto(entity);
+		// Return ResponseEntity
+		return ResponseEntity.created(uriComponents.toUri()).body(newDto);
+	}
+
+	private ResponseEntity<AppDto> updateEntity(AppEntity entity) {
+		// DO Modify
+		AppEntity newEntity = service.save(entity);
+		// Convert to DTO
+		AppDto newDto = toDto(newEntity);
+		// Return ResponseEntity
+		return ResponseEntity.accepted().body(newDto);
+	}
+
 	private AppDto toDto(AppEntity entity) {
 		AppDto dto = // MapperUtils.map(modelMapper, entity, AppDto.class);
 				modelMapper.map(entity, AppDto.class);

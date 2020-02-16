@@ -22,22 +22,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
+@ActiveProfiles("test")
 public class AppServiceIT {
 	@TestConfiguration
 	static class AppServicelTestContextConfiguration {
-
 		@Bean
 		public AppService appService() {
-			return new AppService();
+			AppService service = new AppService();
+			return service;
 		}
 	}
-	// public Page<AppEntity> findAll(Pageable pageable) {
-	// public Optional<AppEntity> findById(String id) {
-	// public void remove(String id)
-	// public AppEntity createOrUpdate(AppEntity entity)
 
 	@Autowired
 	private AppService appService;
@@ -75,7 +73,8 @@ public class AppServiceIT {
 		List<AppEntity> entities = Arrays.asList(entity1, entity2, entity3);
 		PageImpl<AppEntity> expectedPage = new PageImpl<AppEntity>(entities);
 		// when
-		when(appRepository.findAll(org.mockito.ArgumentMatchers.isA(Pageable.class))).thenReturn(expectedPage);
+		when(appService.getRepository().findAll(org.mockito.ArgumentMatchers.isA(Pageable.class)))
+				.thenReturn(expectedPage);
 
 		Pageable pageable = PageRequest.of(0, 2);// anyhow return all
 		Page<AppEntity> actualPage = appService.findAll(pageable);
@@ -95,11 +94,11 @@ public class AppServiceIT {
 				.contact("abc@gmail.com")//
 				.build();
 		entity1.setId("1");
-
 		// when
-		when(appRepository.findById(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
+		when(appService.getRepository().findById(org.mockito.ArgumentMatchers.isA(String.class)))
+				.thenReturn(Optional.of(entity1));
 
-		Optional<AppEntity> actual = appService.findById("1");
+		Optional<AppEntity> actual = appService.find("1");
 		// then
 		assertEquals(entity1, actual.get());
 	}
@@ -117,7 +116,7 @@ public class AppServiceIT {
 		entity1.setId("1");
 
 		// when
-		doNothing().when(appRepository).deleteById("1");
+		doNothing().when(appService.getRepository()).deleteById("1");
 
 		appService.remove("1");
 		// then
@@ -146,15 +145,17 @@ public class AppServiceIT {
 
 		// when
 		creatingEntity.setId("3");
-		when(appRepository.saveAndFlush(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(creatingEntity);
+		when(appService.getRepository().saveAndFlush(org.mockito.ArgumentMatchers.isA(AppEntity.class)))
+				.thenReturn(creatingEntity);
 
-		AppEntity createdEntity = appService.createOrUpdate(creatingEntity);
+		AppEntity createdEntity = appService.save(creatingEntity);
 		// then
 		assertEquals(creatingEntity, createdEntity);
 
-		when(appRepository.saveAndFlush(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(updatingEntity);
+		when(appService.getRepository().saveAndFlush(org.mockito.ArgumentMatchers.isA(AppEntity.class)))
+				.thenReturn(updatingEntity);
 
-		AppEntity updatedEntity = appService.createOrUpdate(updatingEntity);
+		AppEntity updatedEntity = appService.save(updatingEntity);
 		// then
 		assertEquals(updatingEntity, updatedEntity);
 	}

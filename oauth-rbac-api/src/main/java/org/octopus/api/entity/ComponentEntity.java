@@ -2,29 +2,44 @@ package org.octopus.api.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.envers.Audited;
+import org.octopus.api.entity.audit.AbstractAuditEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@EqualsAndHashCode(callSuper = true)
 
 @Entity(name = "Component")
 @Table(name = "oauth_rbac_component")
-public class ComponentEntity extends IdentityEntity{
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Audited
+public class ComponentEntity extends AbstractAuditEntity {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 6659559102920865337L;
+	private static final long serialVersionUID = 3332811595945326825L;
+	@Id
+	@GenericGenerator(name = "system-uuid", strategy = "uuid2")
+	@GeneratedValue(generator = "system-uuid")
+	private String id;
+	
 
 	@Column(length = 128)
 	@Size(min = 3, max = 20)

@@ -11,7 +11,8 @@
 ### Banner Gen
 
 * [Banner Generation Online](https://devops.datenkollektiv.de/banner.txt/index.html)
-* Create banner.txt into resources folder, Copy content generated from website.
+* Create banner.txt in resources folder, Copy content generated from website into banner.txt
+
 
 ### POJO
 
@@ -41,7 +42,6 @@ For Integration Test, Using SpringBootTest and rely on some in-memory database t
 
 * [Smoke Test in 5 minutes](https://assertible.com/blog/set-up-automated-smoke-tests-for-a-rest-api-in-5-minutes)
 
-
 ### Validation
 
 * [Spring Boot Rest Validation](https://mkyong.com/spring-boot/spring-rest-validation-example/)
@@ -69,8 +69,18 @@ The following guides illustrate how to use some features concretely:
 These additional references should also help you:
 
 * [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
+* [Lombok Annotation](https://nullbeans.com/the-ultimate-lombok-annotations-guide/)
 
 ### Tasks
-* Auditing
-* Using DAO Patterns
-* Refactor Mapper
+
+* [Auditing]  - Complete
+-- [Envers](https://hibernate.org/orm/envers/)
+-- [3 ways of Auditing in JPA](https://www.baeldung.com/database-auditing-jpa)
+-- [Spring data Envers Reference](https://docs.spring.io/spring-data/envers/docs/2.1.3.RELEASE/reference/html/)
+-- [Readme of Spring data Envers](https://github.com/hygl/spring-data-envers)
+-- [Sample Steps](https://github.com/rashidi/spring-data-envers-audit-entity)
+-- [Full Reference with Revision Repository](https://github.com/spring-projects/spring-data-envers)
+* [Using DAO Patterns]
+* [Refactor Mapper]
+* [Searching]
+* [M:N Best Practice with Audit - How realtionship table auditable]

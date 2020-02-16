@@ -87,7 +87,7 @@ public class AppControllerIT {
 		// when
 		when(mockMapper.map(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
 				.thenReturn(appDto1);
-		when(mockService.findById(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
+		when(mockService.find(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
 
 		ResponseEntity<String> response = restTemplate.getForEntity("/api/app/1", String.class);
 		String expected = "{\"id\":\"1\",\"appId\":\"123\",\"shortName\":\"MyShortApp\",\"name\":\"MyApp\",\"contact\":\"abc@gmail.com\"}";
@@ -195,7 +195,7 @@ public class AppControllerIT {
 		when(mockMapper.map(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(AppEntity.class)))
 				.thenReturn(entity1);
 
-		when(mockService.createOrUpdate(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity1);
+		when(mockService.save(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity1);
 
 		ResponseEntity<AppDto> response = restTemplate.postForEntity("/api/app", appDto1, AppDto.class);
 
@@ -216,8 +216,7 @@ public class AppControllerIT {
 				.shortName("MyShortApp")//
 				.appId("123")//
 				.contact("abc@gmail.com")//
-				.build();
-		entity1.setId("1");
+				.id("1").build();
 
 		AppDto appDto1 = modelMapper.map(entity1, AppDto.class);
 
@@ -227,17 +226,16 @@ public class AppControllerIT {
 		when(mockMapper.map(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(AppEntity.class)))
 				.thenReturn(entity1);
 
-		when(mockService.findById(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.empty());
-		when(mockService.createOrUpdate(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity1);
+		when(mockService.find("2")).thenReturn(Optional.empty());
+		when(mockService.save(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity1);
 		// Do Create
 		HttpEntity<AppDto> httpEntity = new HttpEntity<AppDto>(appDto1);
-		ResponseEntity<AppDto> response = restTemplate.exchange("/api/app/1", HttpMethod.PUT, httpEntity, AppDto.class);
+		ResponseEntity<AppDto> response = restTemplate.exchange("/api/app/2", HttpMethod.PUT, httpEntity, AppDto.class);
 
-		assertEquals(HttpStatus.CREATED, response.getStatusCode());
-		assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+		assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
 		// Do Update
-		when(mockService.findById(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
+		when(mockService.find("1")).thenReturn(Optional.of(entity1));
 
 		ResponseEntity<AppDto> response2 = restTemplate.exchange("/api/app/1", HttpMethod.PUT, httpEntity,
 				AppDto.class);
@@ -266,7 +264,7 @@ public class AppControllerIT {
 		when(mockMapper.map(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(AppEntity.class)))
 				.thenReturn(entity1);
 
-		when(mockService.findById(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.empty());
+		when(mockService.find(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.empty());
 		// when(mockService.createOrUpdate(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity1);
 		// Do Create
 		HttpEntity<AppDto> httpEntity = new HttpEntity<AppDto>(appDto1);
@@ -304,8 +302,8 @@ public class AppControllerIT {
 		when(mockMapper.map(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(AppEntity.class)))
 				.thenReturn(entity1);
 
-		when(mockService.findById(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
-		when(mockService.createOrUpdate(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity2);
+		when(mockService.find(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
+		when(mockService.save(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity2);
 		//
 
 		String patchInJson = "{\"name1\":\"abc\"}";
@@ -347,8 +345,8 @@ public class AppControllerIT {
 		when(mockMapper.map(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(AppEntity.class)))
 				.thenReturn(entity1);
 
-		when(mockService.findById(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
-		when(mockService.createOrUpdate(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity2);
+		when(mockService.find(org.mockito.ArgumentMatchers.isA(String.class))).thenReturn(Optional.of(entity1));
+		when(mockService.save(org.mockito.ArgumentMatchers.isA(AppEntity.class))).thenReturn(entity2);
 		//
 
 		String patchInJson = "{\"name\":\"abc\"}";
@@ -358,7 +356,7 @@ public class AppControllerIT {
 
 		ResponseEntity<AppDto> response = patchRestTemplate.exchange("/api/app/1?name1=abc", HttpMethod.PATCH,
 				httpEntity, AppDto.class);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
 	}
 
 	private ParameterizedTypeReference<RestPage<AppDto>> getPageTypeReference() {

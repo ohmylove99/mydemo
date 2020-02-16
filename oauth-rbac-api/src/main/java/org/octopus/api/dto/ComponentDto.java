@@ -16,8 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ComponentDto {
-
-	private Long id;
+	private String id;
 
 	@Size(min = 2, max = 128)
 	@NotEmpty(message = "Please provide a name")
